@@ -1,4 +1,5 @@
 import 'package:renew_wise/models/renewal_category.dart';
+import 'package:renew_wise/models/renewwise_entity_metadata.dart';
 
 enum ExpenseSource {
   reminder('Reminder'),
@@ -27,6 +28,9 @@ class ExpenseRecord {
     this.reminderId,
     this.notes,
     required this.createdAt,
+    this.updatedAt,
+    this.subCategory,
+    this.version = RenewWiseEntityMetadata.currentSchemaVersion,
   });
 
   final String id;
@@ -37,6 +41,9 @@ class ExpenseRecord {
   final String? reminderId;
   final String? notes;
   final DateTime createdAt;
+  final DateTime? updatedAt;
+  final String? subCategory;
+  final int version;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -47,24 +54,38 @@ class ExpenseRecord {
         if (reminderId != null) 'reminderId': reminderId,
         if (notes != null && notes!.isNotEmpty) 'notes': notes,
         'createdAt': createdAt.toIso8601String(),
+        if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
+        if (subCategory != null && subCategory!.isNotEmpty)
+          'subCategory': subCategory,
+        if (version != RenewWiseEntityMetadata.currentSchemaVersion)
+          'version': version,
       };
 
-  factory ExpenseRecord.fromJson(Map<String, dynamic> json) => ExpenseRecord(
-        id: json['id'] as String,
-        category: RenewalCategory.values.firstWhere(
-          (c) => c.name == (json['category'] as String?),
-          orElse: () => RenewalCategory.other,
-        ),
-        amount: (json['amount'] as num).toDouble(),
-        date: DateTime.parse(json['date'] as String),
-        source: ExpenseSource.values.firstWhere(
-          (s) => s.name == (json['source'] as String?),
-          orElse: () => ExpenseSource.manual,
-        ),
-        reminderId: json['reminderId'] as String?,
-        notes: json['notes'] as String?,
-        createdAt: DateTime.parse(json['createdAt'] as String),
-      );
+  factory ExpenseRecord.fromJson(Map<String, dynamic> json) {
+    final meta = RenewWiseRecordMeta.fromJson(
+      json,
+      fallbackCreatedAt: DateTime.tryParse(json['createdAt'] as String? ?? ''),
+    );
+    return ExpenseRecord(
+      id: json['id'] as String,
+      category: RenewalCategory.values.firstWhere(
+        (c) => c.name == (json['category'] as String?),
+        orElse: () => RenewalCategory.other,
+      ),
+      amount: (json['amount'] as num).toDouble(),
+      date: DateTime.parse(json['date'] as String),
+      source: ExpenseSource.values.firstWhere(
+        (s) => s.name == (json['source'] as String?),
+        orElse: () => ExpenseSource.manual,
+      ),
+      reminderId: json['reminderId'] as String?,
+      notes: json['notes'] as String?,
+      createdAt: meta.createdAt ?? DateTime.parse(json['createdAt'] as String),
+      updatedAt: meta.updatedAt,
+      subCategory: meta.subCategory,
+      version: meta.version,
+    );
+  }
 
   ExpenseRecord copyWith({
     String? id,
@@ -75,6 +96,9 @@ class ExpenseRecord {
     String? reminderId,
     String? notes,
     DateTime? createdAt,
+    DateTime? updatedAt,
+    String? subCategory,
+    int? version,
     bool clearNotes = false,
     bool clearReminderId = false,
   }) {
@@ -87,6 +111,9 @@ class ExpenseRecord {
       reminderId: clearReminderId ? null : (reminderId ?? this.reminderId),
       notes: clearNotes ? null : (notes ?? this.notes),
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      subCategory: subCategory ?? this.subCategory,
+      version: version ?? this.version,
     );
   }
 }

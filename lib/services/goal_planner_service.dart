@@ -1,32 +1,27 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:renew_wise/models/goal_planner_models.dart';
+import 'package:renew_wise/repository/goal_planner_repository.dart';
+import 'package:renew_wise/repository/shared_preferences_goal_planner_repository.dart';
 
 class GoalPlannerService extends ChangeNotifier {
-  static const _kSettingsKey = 'goal_planner_settings_v1';
+  GoalPlannerService({GoalPlannerRepository? repository})
+      : _repository = repository ?? SharedPreferencesGoalPlannerRepository();
+
+  final GoalPlannerRepository _repository;
 
   GoalPlannerSettings _settings = const GoalPlannerSettings();
 
   GoalPlannerSettings get settings => _settings;
 
   Future<void> initialize() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_kSettingsKey);
-    if (raw != null) {
-      _settings = GoalPlannerSettings.fromJson(
-        jsonDecode(raw) as Map<String, dynamic>,
-      );
-    }
+    _settings = await _repository.loadSettings() ?? const GoalPlannerSettings();
     notifyListeners();
   }
 
   Future<void> saveSettings(GoalPlannerSettings settings) async {
     _settings = settings;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kSettingsKey, jsonEncode(settings.toJson()));
+    await _repository.saveSettings(settings);
     notifyListeners();
   }
 

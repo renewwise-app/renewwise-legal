@@ -10,14 +10,21 @@ import 'package:renew_wise/models/renewal.dart';
 import 'package:renew_wise/models/renewal_category.dart';
 import 'package:renew_wise/models/renewal_currency.dart';
 import 'package:renew_wise/models/renewal_status.dart';
+import 'package:renew_wise/repository/history_repository.dart';
+import 'package:renew_wise/repository/shared_preferences_history_repository.dart';
 import 'package:renew_wise/services/renewal_service.dart';
 import 'package:renew_wise/utils/history_filter.dart';
 import 'package:renew_wise/utils/history_sort.dart';
 
 /// Persists reminder metadata and history outside SQLite (no schema changes).
 class ReminderStateService extends ChangeNotifier {
+  ReminderStateService({HistoryRepository? historyRepository})
+      : _historyRepository =
+            historyRepository ?? SharedPreferencesHistoryRepository();
+
   static const _kStatesKey = 'reminder_states_v1';
-  static const _kHistoryKey = 'reminder_history_v1';
+
+  final HistoryRepository _historyRepository;
 
   final Map<String, ReminderState> _states = {};
   final List<HistoryEntry> _history = [];
@@ -49,17 +56,10 @@ class ReminderStateService extends ChangeNotifier {
             ReminderState.fromJson(value as Map<String, dynamic>);
       });
     }
-    final historyRaw = prefs.getString(_kHistoryKey);
-    if (historyRaw != null) {
-      final list = jsonDecode(historyRaw) as List<dynamic>;
-      _history
-        ..clear()
-        ..addAll(
-          list.map(
-            (e) => HistoryEntry.fromJson(e as Map<String, dynamic>),
-          ),
-        );
-    }
+    final historyRaw = await _historyRepository.loadAll();
+    _history
+      ..clear()
+      ..addAll(historyRaw);
   }
 
   ReminderState stateFor(String renewalId) =>
@@ -69,10 +69,7 @@ class ReminderStateService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final statesJson = _states.map((k, v) => MapEntry(k, v.toJson()));
     await prefs.setString(_kStatesKey, jsonEncode(statesJson));
-    await prefs.setString(
-      _kHistoryKey,
-      jsonEncode(_history.map((e) => e.toJson()).toList()),
-    );
+    await _historyRepository.saveAll(_history);
     notifyListeners();
   }
 

@@ -1,13 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:renew_wise/models/expense_record.dart';
+import 'package:renew_wise/repository/expense_repository.dart';
+import 'package:renew_wise/repository/shared_preferences_expense_repository.dart';
 import 'package:renew_wise/utils/date_utils.dart';
 
 class ExpenseService extends ChangeNotifier {
-  static const _kExpensesKey = 'expense_records_v1';
+  ExpenseService({ExpenseRepository? repository})
+      : _repository = repository ?? SharedPreferencesExpenseRepository();
+
+  final ExpenseRepository _repository;
 
   final List<ExpenseRecord> _expenses = [];
 
@@ -18,27 +20,14 @@ class ExpenseService extends ChangeNotifier {
   }
 
   Future<void> initialize() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_kExpensesKey);
-    if (raw != null) {
-      final list = jsonDecode(raw) as List<dynamic>;
-      _expenses
-        ..clear()
-        ..addAll(
-          list.map(
-            (e) => ExpenseRecord.fromJson(e as Map<String, dynamic>),
-          ),
-        );
-    }
+    _expenses
+      ..clear()
+      ..addAll(await _repository.loadAll());
     notifyListeners();
   }
 
   Future<void> _persist() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _kExpensesKey,
-      jsonEncode(_expenses.map((e) => e.toJson()).toList()),
-    );
+    await _repository.saveAll(_expenses);
     notifyListeners();
   }
 

@@ -1,4 +1,5 @@
 import 'package:renew_wise/models/renewal_category.dart';
+import 'package:renew_wise/models/renewwise_entity_metadata.dart';
 
 /// Completed event stored in completion history (SharedPreferences).
 class HistoryEntry {
@@ -19,6 +20,10 @@ class HistoryEntry {
     this.restored = false,
     this.restoredAt,
     this.customEventType,
+    this.createdAt,
+    this.updatedAt,
+    this.subCategory,
+    this.version = RenewWiseEntityMetadata.currentSchemaVersion,
   });
 
   final String id;
@@ -37,6 +42,10 @@ class HistoryEntry {
   final bool restored;
   final DateTime? restoredAt;
   final String? customEventType;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? subCategory;
+  final int version;
 
   String get completionMethodLabel =>
       completionMethod == 'notification' ? 'Notification' : 'App';
@@ -58,11 +67,23 @@ class HistoryEntry {
         'restored': restored,
         if (restoredAt != null) 'restoredAt': restoredAt!.toIso8601String(),
         if (customEventType != null) 'customEventType': customEventType,
+        if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+        if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
+        if (subCategory != null && subCategory!.isNotEmpty)
+          'subCategory': subCategory,
+        if (version != RenewWiseEntityMetadata.currentSchemaVersion)
+          'version': version,
       };
 
   factory HistoryEntry.fromJson(Map<String, dynamic> json) {
     final completionDate = DateTime.parse(json['completionDate'] as String);
     final renewalId = json['renewalId'] as String;
+    final meta = RenewWiseRecordMeta.fromJson(
+      json,
+      fallbackCreatedAt: completionDate,
+      fallbackUpdatedAt: completionDate,
+      fallbackSubCategory: json['customEventType'] as String?,
+    );
     return HistoryEntry(
       id: json['id'] as String? ??
           '${renewalId}_${completionDate.millisecondsSinceEpoch}',
@@ -90,6 +111,10 @@ class HistoryEntry {
           ? DateTime.parse(json['restoredAt'] as String)
           : null,
       customEventType: json['customEventType'] as String?,
+      createdAt: meta.createdAt,
+      updatedAt: meta.updatedAt,
+      subCategory: meta.subCategory,
+      version: meta.version,
     );
   }
 
@@ -110,6 +135,10 @@ class HistoryEntry {
     bool? restored,
     DateTime? restoredAt,
     String? customEventType,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? subCategory,
+    int? version,
   }) {
     return HistoryEntry(
       id: id ?? this.id,
@@ -128,6 +157,10 @@ class HistoryEntry {
       restored: restored ?? this.restored,
       restoredAt: restoredAt ?? this.restoredAt,
       customEventType: customEventType ?? this.customEventType,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      subCategory: subCategory ?? this.subCategory,
+      version: version ?? this.version,
     );
   }
 }

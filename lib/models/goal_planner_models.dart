@@ -1,5 +1,6 @@
 import 'package:renew_wise/models/renewal_currency.dart';
 import 'package:renew_wise/models/renewal_priority.dart';
+import 'package:renew_wise/models/renewwise_entity_metadata.dart';
 
 enum GoalIncomeType {
   sameEveryMonth('Same income every month'),
@@ -29,6 +30,7 @@ class GoalPlannerSettings {
     this.incomeType = GoalIncomeType.sameEveryMonth,
     this.monthlyIncomes = const {},
     this.planGenerated = false,
+    this.version = RenewWiseEntityMetadata.currentSchemaVersion,
   });
 
   final String? goalName;
@@ -39,6 +41,7 @@ class GoalPlannerSettings {
   final GoalIncomeType incomeType;
   final Map<String, double> monthlyIncomes;
   final bool planGenerated;
+  final int version;
 
   DateTime? get targetDate {
     if (targetYear == null || targetMonth == null) return null;
@@ -54,6 +57,7 @@ class GoalPlannerSettings {
     GoalIncomeType? incomeType,
     Map<String, double>? monthlyIncomes,
     bool? planGenerated,
+    int? version,
     bool clearGoalName = false,
   }) {
     return GoalPlannerSettings(
@@ -65,6 +69,7 @@ class GoalPlannerSettings {
       incomeType: incomeType ?? this.incomeType,
       monthlyIncomes: monthlyIncomes ?? this.monthlyIncomes,
       planGenerated: planGenerated ?? this.planGenerated,
+      version: version ?? this.version,
     );
   }
 
@@ -78,6 +83,8 @@ class GoalPlannerSettings {
         'incomeType': incomeType.name,
         'monthlyIncomes': monthlyIncomes,
         'planGenerated': planGenerated,
+        if (version != RenewWiseEntityMetadata.currentSchemaVersion)
+          'version': version,
       };
 
   factory GoalPlannerSettings.fromJson(Map<String, dynamic> json) {
@@ -96,6 +103,7 @@ class GoalPlannerSettings {
         (k, v) => MapEntry(k, (v as num).toDouble()),
       ),
       planGenerated: json['planGenerated'] as bool? ?? false,
+      version: RenewWiseEntityMetadata.parseVersion(json['version']),
     );
   }
 }

@@ -2,6 +2,7 @@
 library;
 
 import 'package:renew_wise/models/vault_document_category.dart';
+import 'package:renew_wise/models/renewwise_entity_metadata.dart';
 
 class EventDocument {
   const EventDocument({
@@ -22,6 +23,8 @@ class EventDocument {
     this.ocrText,
     this.storageBackend = VaultStorageBackend.local,
     this.isProtected = false,
+    this.updatedAt,
+    this.version = RenewWiseEntityMetadata.currentSchemaVersion,
   });
 
   final String id;
@@ -43,6 +46,12 @@ class EventDocument {
 
   /// When true, opening or changing protection requires device authentication.
   final bool isProtected;
+  final DateTime? updatedAt;
+  final int version;
+
+  DateTime? get createdAt => addedAt;
+
+  String? get subCategory => customCategory;
 
   VaultFileType get resolvedFileType =>
       fileType ?? VaultFileType.fromPath(path, isImage: isImage);
@@ -70,10 +79,20 @@ class EventDocument {
         if (ocrText != null) 'ocrText': ocrText,
         'storageBackend': storageBackend.name,
         'isProtected': isProtected,
+        if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
+        if (version != RenewWiseEntityMetadata.currentSchemaVersion)
+          'version': version,
       };
 
   factory EventDocument.fromJson(Map<String, dynamic> json) {
     final linked = json['linkedRenewalIds'];
+    final meta = RenewWiseRecordMeta.fromJson(
+      json,
+      fallbackCreatedAt: json['addedAt'] != null
+          ? DateTime.tryParse(json['addedAt'] as String)
+          : null,
+      fallbackSubCategory: json['customCategory'] as String?,
+    );
     return EventDocument(
       id: json['id'] as String,
       path: json['path'] as String,
@@ -109,6 +128,8 @@ class EventDocument {
         orElse: () => VaultStorageBackend.local,
       ),
       isProtected: json['isProtected'] as bool? ?? false,
+      updatedAt: meta.updatedAt,
+      version: meta.version,
     );
   }
 
@@ -130,6 +151,8 @@ class EventDocument {
     String? ocrText,
     VaultStorageBackend? storageBackend,
     bool? isProtected,
+    DateTime? updatedAt,
+    int? version,
   }) {
     return EventDocument(
       id: id ?? this.id,
@@ -149,6 +172,8 @@ class EventDocument {
       ocrText: ocrText ?? this.ocrText,
       storageBackend: storageBackend ?? this.storageBackend,
       isProtected: isProtected ?? this.isProtected,
+      updatedAt: updatedAt ?? this.updatedAt,
+      version: version ?? this.version,
     );
   }
 }

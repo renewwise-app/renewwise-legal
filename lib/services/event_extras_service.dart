@@ -7,12 +7,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:renew_wise/models/event_document.dart';
 import 'package:renew_wise/models/backup_models.dart';
 import 'package:renew_wise/models/vault_document_category.dart';
+import 'package:renew_wise/repository/shared_preferences_vault_repository.dart';
+import 'package:renew_wise/repository/vault_repository.dart';
 
 /// Vault + event documents and activity log (SharedPreferences — no SQLite).
 class EventExtrasService extends ChangeNotifier {
-  static const _kLegacyDocumentsKey = 'event_documents_v1';
-  static const _kVaultKey = 'vault_documents_v2';
+  EventExtrasService({VaultRepository? vaultRepository})
+      : _vaultRepository = vaultRepository ?? SharedPreferencesVaultRepository();
+
   static const _kActivityKey = 'event_activity_v1';
+
+  final VaultRepository _vaultRepository;
 
   final Map<String, EventDocument> _vault = {};
   final Map<String, List<EventActivity>> _activities = {};
@@ -68,18 +73,16 @@ class EventExtrasService extends ChangeNotifier {
   }
 
   Future<void> initialize() async {
-    final prefs = await SharedPreferences.getInstance();
-    final vaultRaw = prefs.getString(_kVaultKey);
-    if (vaultRaw != null) {
-      final map = jsonDecode(vaultRaw) as Map<String, dynamic>;
-      map.forEach((id, value) {
-        _vault[id] =
-            EventDocument.fromJson(value as Map<String, dynamic>);
-      });
+    final loaded = await _vaultRepository.loadAllDocuments();
+    if (loaded.isNotEmpty) {
+      _vault
+        ..clear()
+        ..addAll(loaded);
     } else {
-      await _migrateLegacy(prefs);
+      await _migrateLegacy();
     }
 
+    final prefs = await SharedPreferences.getInstance();
     final actRaw = prefs.getString(_kActivityKey);
     if (actRaw != null) {
       final map = jsonDecode(actRaw) as Map<String, dynamic>;
@@ -91,13 +94,11 @@ class EventExtrasService extends ChangeNotifier {
     }
   }
 
-  Future<void> _migrateLegacy(SharedPreferences prefs) async {
-    final legacyRaw = prefs.getString(_kLegacyDocumentsKey);
-    if (legacyRaw == null) return;
-    final map = jsonDecode(legacyRaw) as Map<String, dynamic>;
-    map.forEach((renewalId, value) {
-      for (final e in value as List<dynamic>) {
-        final doc = EventDocument.fromJson(e as Map<String, dynamic>);
+  Future<void> _migrateLegacy() async {
+    final legacy = await _vaultRepository.loadLegacyDocumentsByRenewal();
+    if (legacy == null) return;
+    legacy.forEach((renewalId, value) {
+      for (final doc in value) {
         final existing = _vault[doc.id];
         if (existing != null) {
           final links = {...existing.linkedRenewalIds, renewalId}.toList();
@@ -115,11 +116,8 @@ class EventExtrasService extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
+    await _vaultRepository.saveAllDocuments(_vault);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _kVaultKey,
-      jsonEncode(_vault.map((k, v) => MapEntry(k, v.toJson()))),
-    );
     await prefs.setString(
       _kActivityKey,
       jsonEncode(

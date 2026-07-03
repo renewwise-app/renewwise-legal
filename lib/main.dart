@@ -12,10 +12,12 @@ import 'package:renew_wise/services/backup/backup_service.dart';
 import 'package:renew_wise/services/developer_service.dart';
 import 'package:renew_wise/services/event_extras_service.dart';
 import 'package:renew_wise/services/expense_service.dart';
+import 'package:renew_wise/services/goal_planner_service.dart';
 import 'package:renew_wise/services/local_notification_service.dart';
 import 'package:renew_wise/services/notification_action_handler.dart';
 import 'package:renew_wise/services/reminder_state_service.dart';
 import 'package:renew_wise/services/renewal_service.dart';
+import 'package:renew_wise/services/renewwise_assistant_service.dart';
 import 'package:renew_wise/services/settings_service.dart';
 import 'package:renew_wise/services/sharing_service.dart';
 import 'package:renew_wise/services/smart_lock_service.dart';
@@ -62,6 +64,20 @@ void main() async {
   await reminderStateService.evaluateMissedReminders(renewalService.renewals);
 
   await initializeExpenseService();
+
+  final goalPlannerService = GoalPlannerService();
+  await goalPlannerService.initialize();
+
+  RenewWiseAssistantService.attach(
+    RenewWiseAssistantService(
+      renewalService: renewalService,
+      expenseService: expenseService,
+      goalPlannerService: goalPlannerService,
+      eventExtrasService: eventExtrasService,
+      reminderStateService: reminderStateService,
+      settingsService: settingsService,
+    ),
+  );
 
   final actionHandler = NotificationActionHandler(
     navigatorKey: _navigatorKey,
