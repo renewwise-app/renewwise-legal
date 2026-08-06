@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RenewWise</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f7f7;
+      --card: #ffffff;
+      --text: #1a2b2b;
+      --muted: #4a6363;
+      --accent: #0d6e6e;
+      --border: #d7e3e3;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101818;
+        --card: #182020;
+        --text: #e8f0f0;
+        --muted: #a8bcbc;
+        --border: #2a3a3a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 4rem;
+    }
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2rem;
+      color: var(--accent);
+    }
+    .lead { color: var(--muted); margin: 0 0 2rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    a { color: var(--accent); }
+    ul { margin: 0.75rem 0 0; padding-left: 1.25rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>RenewWise</h1>
+    <p class="lead">Stay on top of renewals, deadlines, and important documents.</p>
+
+    <div class="card">
+      <strong>Legal</strong>
+      <ul>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+      </ul>
+    </div>
+
+    <p class="lead">RenewWise is a mobile app. This site hosts public legal documents for app store and OAuth requirements.</p>
+  </main>
+</body>
+</html>
