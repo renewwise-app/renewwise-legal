@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Data Deletion — RenewWise</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f7f7;
+      --card: #ffffff;
+      --text: #1a2b2b;
+      --muted: #4a6363;
+      --accent: #0d6e6e;
+      --border: #d7e3e3;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101818;
+        --card: #182020;
+        --text: #e8f0f0;
+        --muted: #a8bcbc;
+        --border: #2a3a3a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1 { margin: 0 0 1.5rem; color: var(--accent); font-size: 1.75rem; }
+    h2 { margin: 0 0 0.75rem; font-size: 1.1rem; color: var(--accent); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    a { color: var(--accent); }
+    ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    .muted { color: var(--muted); margin: 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <p><a href="index.html">&larr; Back to RenewWise Legal Center</a></p>
+    <h1>Data Deletion</h1>
+
+    <div class="card">
+      <p>RenewWise stores your reminders, documents, and settings on your device. You can delete your data at any time using the options below.</p>
+    </div>
+
+    <div class="card">
+      <h2>Delete data in the app</h2>
+      <p>Open <strong>Settings</strong> in RenewWise and use <strong>Delete All Data</strong> to permanently remove:</p>
+      <ul>
+        <li>Your RenewWise account identifiers stored on the device (welcome login email and provider)</li>
+        <li>Reminders, history, expenses, goals, and assistant drafts</li>
+        <li>Stored documents in the vault and attached files on the device</li>
+        <li>Local app preferences and optional local backup cache</li>
+      </ul>
+      <p class="muted">This action is performed on your device and cannot be undone.</p>
+    </div>
+
+    <div class="card">
+      <h2>Google Drive backup (if enabled)</h2>
+      <p>If you connected Google Drive backup, encrypted backup files may remain in your Google Drive until you remove them.</p>
+      <ul>
+        <li>In RenewWise, disconnect backup and clear local backup cache from Settings when deleting app data.</li>
+        <li>In Google Drive, delete files in your RenewWise backup folder, or revoke RenewWise access under your Google Account security settings.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Request deletion by email</h2>
+      <p>If you cannot access the app or need help deleting optional cloud backup files, email us at <a href="mailto:support.renewwise@gmail.com">support.renewwise@gmail.com</a> from the address linked to your RenewWise account.</p>
+      <p>Include:</p>
+      <ul>
+        <li>The Google account email used with RenewWise (if applicable)</li>
+        <li>Whether Google Drive backup was enabled</li>
+        <li>What you want deleted (account identifiers, Drive backups, or all associated data)</li>
+      </ul>
+      <p class="muted">We will confirm receipt and guide you through any remaining steps.</p>
+    </div>
+
+    <div class="card">
+      <h2>Uninstalling the app</h2>
+      <p>Removing RenewWise from your device deletes local app data stored in the app sandbox. It does not automatically delete files you created separately in Google Drive.</p>
+    </div>
+  </main>
+</body>
+</html>
